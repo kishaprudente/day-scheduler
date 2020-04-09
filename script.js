@@ -5,39 +5,59 @@ $("#currentDay").text(dateToday);
 
 // I am presented with timeblocks for standard business hours
 var hours = [
-  "09:00",
-  "10:00",
-  "11:00",
-  "12:00",
-  "13:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
+  { stringTime: "9AM", numTime: 0900 },
+  { stringTime: "10AM", numTime: 1000 },
+  { stringTime: "11AM", numTime: 1100 },
+  { stringTime: "12PM", numTime: 1200 },
+  { stringTime: "1PM", numTime: 1300 },
+  { stringTime: "2PM", numTime: 1400 },
+  { stringTime: "3PM", numTime: 1500 },
+  { stringTime: "4PM", numTime: 1600 },
+  { stringTime: "5PM", numTime: 1700 },
 ];
-
-var schedule = {};
 
 // make a row for every hour from 9am - 5pm
 // get the hours from 9am - 5pm
 hours.map((hour) => {
   var hourRow = $("<div>");
-  var hourDisplay = $("<span>");
-  var hourDescription = $("<textarea>");
-  var saveBtn = $("<button>");
-
   hourRow.attr("class", "row");
-  hourDisplay.attr("class", "hour");
+
+  var hourSpan = $("<span>");
+  hourSpan.attr("class", "hour col");
+  hourSpan.text(hour.stringTime);
+  hourRow.append(hourSpan);
+
+  // WHEN I click into a timeblock
+  // THEN I can enter an event
+  var hourDescription = $("<textarea>");
   hourDescription.attr("class", "description");
-  hourDisplay.text(hour);
+
+  var saveBtn = $("<button>");
+  saveBtn.attr("class", "saveBtn");
+  saveBtn.text("Save");
+
+  // WHEN I click the save button for that timeblock
+  saveBtn.on("click", function () {
+    // THEN the text for that event is saved in local storage
+    var event = hourDescription.val();
+    localStorage.setItem(hour.stringTime, event);
+  });
+
+  var storedValue = localStorage.getItem(hour.stringTime);
+
+  // WHEN I refresh the page
+  // THEN the saved events persist
+  if (storedValue) {
+    hourDescription.val(storedValue);
+  }
 
   // WHEN I view the timeblocks for that day
   $(".time-block").append(hourRow);
-  hourRow.append(hourDisplay);
   hourRow.append(hourDescription);
+  hourRow.append(saveBtn);
 
-  var timeNow = parseInt(moment().format("HH"));
-  var hourNow = parseInt(hour);
+  var timeNow = parseInt(moment().format("HH") + "00");
+  var hourNow = parseInt(hour.numTime);
 
   // THEN each timeblock is color coded to indicate whether it is in the past, present, or future
   if (hourNow === timeNow) {
@@ -47,26 +67,4 @@ hours.map((hour) => {
   } else {
     hourDescription.addClass("future");
   }
-
-  // WHEN I click into a timeblock
-  // THEN I can enter an event
-
-  // WHEN I click the save button for that timeblock
-  saveBtn.attr("class", "saveBtn");
-  saveBtn.text("Save");
-  hourRow.append(saveBtn);
-
-  saveBtn.on("click", function () {
-    // THEN the text for that event is saved in local storage
-    schedule.day = dateToday;
-    schedule.time = hour;
-    schedule.event = hourDescription.val();
-    console.log(schedule);
-    // localStorage.setItem("schedule", JSON.stringify(schedule));
-  });
-
-  // WHEN I refresh the page
-  // THEN the saved events persist
-  //   var lastSchedule = JSON.parse(localStorage.getItem("schedule"));
-  //   hourDescription.text = lastSchedule.event;
 });
